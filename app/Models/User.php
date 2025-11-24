@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -40,5 +41,12 @@ class User extends Authenticatable
     public function laporanStok()
     {
         return $this->hasMany(LaporanStok::class, 'id_user_verifikator', 'id');
+    }
+
+    public function setPasswordAttribute($value)
+    {
+        if (!empty($value)) {
+            $this->attributes['password'] = Hash::make($value);
+        }
     }
 }

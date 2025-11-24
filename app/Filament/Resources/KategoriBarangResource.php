@@ -18,7 +18,6 @@ class KategoriBarangResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-tag';
     protected static ?string $navigationLabel = 'Kategori Barang';
     protected static ?string $navigationGroup = 'Master Data';
-    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {

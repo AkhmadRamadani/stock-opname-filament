@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\TransaksiKeluarResource;
+use App\Filament\Resources\TransaksiMasukResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -37,8 +39,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                TransaksiMasukResource\Widgets\Stats::class,
+                TransaksiKeluarResource\Widgets\Stats::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -53,6 +55,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])->brandName('Sistem Informasi Stock dan Opname Barang');
     }
 }
