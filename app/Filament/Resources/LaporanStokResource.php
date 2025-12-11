@@ -63,6 +63,7 @@ class LaporanStokResource extends Resource
                             ->label('Tanggal Laporan')
                             ->required()
                             ->default(today())
+                            ->maxDate(today())
                             ->native(false),
                     ])
                     ->columns(3),
@@ -102,7 +103,12 @@ class LaporanStokResource extends Resource
                         Forms\Components\TextInput::make('stok_akhir')
                             ->label('Stok Akhir')
                             ->default(0)
-                            ->numeric(),
+                            ->numeric()
+                            ->reactive()
+                            ->afterStateUpdated(
+                                fn($state, callable $set, callable $get) =>
+                                $set('stok_awal', (int)$get('stok_akhir') - (int)$get('total_masuk') + (int)$get('total_keluar'))
+                            )->readOnly(),
 
                     ])
                     ->columns(4),
