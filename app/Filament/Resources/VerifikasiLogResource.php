@@ -34,12 +34,47 @@ class VerifikasiLogResource extends Resource
                                 'masuk' => 'Transaksi Masuk',
                                 'keluar' => 'Transaksi Keluar',
                                 'laporan' => 'Laporan Stok',
-                            ]),
-                        Forms\Components\TextInput::make('id_referensi')
+                            ])
+                            ->live(),
+                        Forms\Components\Select::make('id_referensi')
                             ->label('ID Referensi')
                             ->required()
-                            ->numeric()
-                            ->helperText('ID dari record yang diverifikasi'),
+                            ->searchable()
+                            ->options(function (Forms\Get $get) {
+                                $tipe = $get('tipe_transaksi');
+                                if (!$tipe) {
+                                    return [];
+                                }
+
+                                if ($tipe === 'masuk') {
+                                    return \App\Models\TransaksiMasuk::with('barang')
+                                        ->latest('tanggal_masuk')
+                                        ->get()
+                                        ->mapWithKeys(function ($item) {
+                                            return [$item->id => "Ref: {$item->id} - {$item->barang->nama_barang} ({$item->tanggal_masuk->format('d/m/Y')})"];
+                                        });
+                                }
+
+                                if ($tipe === 'keluar') {
+                                    return \App\Models\TransaksiKeluar::with('barang')
+                                        ->latest('tanggal_keluar')
+                                        ->get()
+                                        ->mapWithKeys(function ($item) {
+                                            return [$item->id => "Ref: {$item->id} - {$item->barang->nama_barang} ({$item->tanggal_keluar->format('d/m/Y')})"];
+                                        });
+                                }
+
+                                if ($tipe === 'laporan') {
+                                    return \App\Models\LaporanStok::with('barang')
+                                        ->latest('tanggal')
+                                        ->get()
+                                        ->mapWithKeys(function ($item) {
+                                            return [$item->id => "Ref: {$item->id} - {$item->barang->nama_barang} ({$item->tanggal->format('d/m/Y')})"];
+                                        });
+                                }
+
+                                return [];
+                            }),
                         Forms\Components\Select::make('id_user_verifikator')
                             ->label('Verifikator')
                             ->required()
@@ -93,13 +128,15 @@ class VerifikasiLogResource extends Resource
                     ->label('Tanggal')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('tipe_transaksi')
+                Tables\Columns\TextColumn::make('tipe_transaksi')
                     ->label('Tipe')
-                    ->colors([
-                        'success' => 'masuk',
-                        'warning' => 'keluar',
-                        'info' => 'laporan',
-                    ])
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'masuk' => 'success',
+                        'keluar' => 'warning',
+                        'laporan' => 'info',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'masuk' => 'Transaksi Masuk',
                         'keluar' => 'Transaksi Keluar',
@@ -113,24 +150,30 @@ class VerifikasiLogResource extends Resource
                     ->label('Verifikator')
                     ->searchable()
                     ->limit(20),
-                Tables\Columns\BadgeColumn::make('status_sebelum')
+                Tables\Columns\TextColumn::make('status_sebelum')
                     ->label('Status Awal')
-                    ->colors([
-                        'warning' => 'pending',
-                        'gray' => 'draft',
-                    ]),
-                Tables\Columns\BadgeColumn::make('status_sesudah')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'draft' => 'gray',
+                        'verified' => 'success',
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('status_sesudah')
                     ->label('Status Akhir')
-                    ->colors([
-                        'success' => 'verified',
-                        'danger' => 'rejected',
-                        'info' => 'published',
-                    ])
-                    ->icons([
-                        'heroicon-o-check-circle' => 'verified',
-                        'heroicon-o-x-circle' => 'rejected',
-                        'heroicon-o-eye' => 'published',
-                    ]),
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'verified' => 'success',
+                        'rejected' => 'danger',
+                        'published' => 'info',
+                        default => 'gray',
+                    })
+                    ->icon(fn(string $state): ?string => match ($state) {
+                        'verified' => 'heroicon-o-check-circle',
+                        'rejected' => 'heroicon-o-x-circle',
+                        'published' => 'heroicon-o-eye',
+                        default => null,
+                    }),
                 Tables\Columns\TextColumn::make('catatan_verifikasi')
                     ->label('Catatan')
                     ->limit(30)
