@@ -62,7 +62,7 @@ class TransaksiKeluar extends Model
                 'tipe_transaksi' => 'keluar',
                 'id_referensi' => $model->id,
                 'id_user_verifikator' => auth()->id() ?? $model->id_user_input,
-                'status_sebelum' => null,
+                'status_sebelum' => 'draft',
                 'status_sesudah' => 'pending',
                 'catatan_verifikasi' => 'Transaksi keluar dibuat',
                 'tanggal_verifikasi' => now(),

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_referensi');
             $table->unsignedBigInteger('id_user_verifikator');
             $table->enum('status_sebelum', ['pending', 'draft']);
-            $table->enum('status_sesudah', ['verified', 'rejected', 'published']);
+            $table->enum('status_sesudah', ['pending', 'draft', 'verified', 'rejected', 'published']);
             $table->string('catatan_verifikasi')->nullable();
             $table->dateTime('tanggal_verifikasi');
             $table->timestamps();
