@@ -56,5 +56,17 @@ class TransaksiKeluar extends Model
                 $model->id_user_input = auth()->id();
             }
         });
+
+        static::created(function ($model) {
+            \App\Models\VerifikasiLog::create([
+                'tipe_transaksi' => 'keluar',
+                'id_referensi' => $model->id,
+                'id_user_verifikator' => auth()->id() ?? $model->id_user_input,
+                'status_sebelum' => null,
+                'status_sesudah' => 'pending',
+                'catatan_verifikasi' => 'Transaksi keluar dibuat',
+                'tanggal_verifikasi' => now(),
+            ]);
+        });
     }
 }

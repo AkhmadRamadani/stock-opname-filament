@@ -49,6 +49,7 @@ class VerifikasiLogResource extends Resource
                                 if ($tipe === 'masuk') {
                                     return \App\Models\TransaksiMasuk::with('barang')
                                         ->latest('tanggal_masuk')
+                                        ->limit(50)
                                         ->get()
                                         ->mapWithKeys(function ($item) {
                                             return [$item->id => "Ref: {$item->id} - {$item->barang->nama_barang} ({$item->tanggal_masuk->format('d/m/Y')})"];
@@ -58,6 +59,7 @@ class VerifikasiLogResource extends Resource
                                 if ($tipe === 'keluar') {
                                     return \App\Models\TransaksiKeluar::with('barang')
                                         ->latest('tanggal_keluar')
+                                        ->limit(50)
                                         ->get()
                                         ->mapWithKeys(function ($item) {
                                             return [$item->id => "Ref: {$item->id} - {$item->barang->nama_barang} ({$item->tanggal_keluar->format('d/m/Y')})"];
@@ -67,6 +69,7 @@ class VerifikasiLogResource extends Resource
                                 if ($tipe === 'laporan') {
                                     return \App\Models\LaporanStok::with('barang')
                                         ->latest('tanggal')
+                                        ->limit(50)
                                         ->get()
                                         ->mapWithKeys(function ($item) {
                                             return [$item->id => "Ref: {$item->id} - {$item->barang->nama_barang} ({$item->tanggal->format('d/m/Y')})"];
@@ -97,6 +100,8 @@ class VerifikasiLogResource extends Resource
                             ->label('Status Sesudah')
                             ->required()
                             ->options([
+                                'pending' => 'Pending',
+                                'draft' => 'Draft',
                                 'verified' => 'Verified',
                                 'rejected' => 'Rejected',
                                 'published' => 'Published',
@@ -163,12 +168,16 @@ class VerifikasiLogResource extends Resource
                     ->label('Status Akhir')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'draft' => 'gray',
                         'verified' => 'success',
                         'rejected' => 'danger',
                         'published' => 'info',
                         default => 'gray',
                     })
                     ->icon(fn(string $state): ?string => match ($state) {
+                        'pending' => 'heroicon-o-clock',
+                        'draft' => 'heroicon-o-document',
                         'verified' => 'heroicon-o-check-circle',
                         'rejected' => 'heroicon-o-x-circle',
                         'published' => 'heroicon-o-eye',
@@ -193,6 +202,8 @@ class VerifikasiLogResource extends Resource
                 Tables\Filters\SelectFilter::make('status_sesudah')
                     ->label('Status Akhir')
                     ->options([
+                        'pending' => 'Pending',
+                        'draft' => 'Draft',
                         'verified' => 'Verified',
                         'rejected' => 'Rejected',
                         'published' => 'Published',

@@ -60,6 +60,8 @@ class VerifikasiLogsRelationManager extends RelationManager
                     ->label('Ke Status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'draft' => 'gray',
                         'verified' => 'success',
                         'rejected' => 'danger',
                         'published' => 'info',
