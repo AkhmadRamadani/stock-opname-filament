@@ -57,6 +57,14 @@ class AdminPanelProvider extends PanelProvider
             ->plugin(FilamentSpatieRolesPermissionsPlugin::make())
             ->authMiddleware([
                 Authenticate::class,
-            ])->brandName('Sistem Informasi Stock dan Opname Barang');
+            ])
+            ->navigationGroups([
+                'Master Data',
+                'Transaksi',
+                'Stock Opname',
+                'Sistem',
+                'User Management',
+            ])
+            ->brandName('Sistem Informasi Stock dan Opname Barang');
     }
 }
