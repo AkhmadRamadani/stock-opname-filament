@@ -6,6 +6,7 @@ use App\Filament\Resources\TransaksiMasukResource\Pages;
 use App\Models\TransaksiMasuk;
 use App\Models\Barang;
 use App\Models\User;
+use App\Filament\RelationManagers\VerifikasiLogsRelationManager;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -267,6 +268,13 @@ class TransaksiMasukResource extends Resource
                 ExportBulkAction::make()
             ])
             ->defaultSort('tanggal_masuk', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            VerifikasiLogsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

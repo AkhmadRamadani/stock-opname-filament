@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StockOpnameResource\Pages;
 use App\Models\Barang;
 use App\Models\LaporanStok;
+use App\Filament\RelationManagers\VerifikasiLogsRelationManager;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -127,6 +128,58 @@ class StockOpnameResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('verify')
+                    ->label('Verifikasi')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('warning')
+                    ->visible(fn($record) => $record->status === 'draft' && auth()->user()->role === 'supervisor')
+                    ->form([
+                        Forms\Components\Textarea::make('catatan_verifikasi')
+                            ->label('Catatan Verifikasi')
+                            ->rows(3),
+                    ])
+                    ->action(function (array $data, $record) {
+                        $record->update(['status' => 'verified']);
+
+                        \App\Models\VerifikasiLog::create([
+                            'tipe_transaksi' => 'laporan',
+                            'id_referensi' => $record->id,
+                            'id_user_verifikator' => auth()->id(),
+                            'status_sebelum' => 'draft',
+                            'status_sesudah' => 'verified',
+                            'catatan_verifikasi' => $data['catatan_verifikasi'] ?? null,
+                            'tanggal_verifikasi' => now(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Stock Opname Verified')
+                            ->success()
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('publish')
+                    ->label('Publish')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success')
+                    ->visible(fn($record) => $record->status === 'verified' && auth()->user()->role === 'supervisor')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update(['status' => 'published']);
+
+                        \App\Models\VerifikasiLog::create([
+                            'tipe_transaksi' => 'laporan',
+                            'id_referensi' => $record->id,
+                            'id_user_verifikator' => auth()->id(),
+                            'status_sebelum' => 'verified',
+                            'status_sesudah' => 'published',
+                            'catatan_verifikasi' => 'Laporan dipublikasikan',
+                            'tanggal_verifikasi' => now(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Stock Opname Published')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->headerActions([
                 Action::make('generateStockOpname')
@@ -177,7 +230,7 @@ class StockOpnameResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            VerifikasiLogsRelationManager::class,
         ];
     }
 

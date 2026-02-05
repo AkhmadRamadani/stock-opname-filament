@@ -18,30 +18,16 @@ class LaporanStok extends Model
         'total_masuk',
         'total_keluar',
         'stok_akhir',
-        'status',
-        'id_user_verifikator',
-        'tanggal_verifikasi',
+        'status'
     ];
 
-    protected $casts = [
-        'tanggal' => 'date',
-        'stok_awal' => 'integer',
-        'total_masuk' => 'integer',
-        'total_keluar' => 'integer',
-        'stok_akhir' => 'integer',
-        'tanggal_verifikasi' => 'datetime',
-    ];
-
-    // Relasi ke Barang
     public function barang()
     {
         return $this->belongsTo(Barang::class, 'kode_barang', 'kode_barang');
     }
 
-    // Relasi ke User (verifikator)
-    public function verifikator()
+    public function verifikasiLogs()
     {
-        return $this->belongsTo(User::class, 'id_user_verifikator');
+        return $this->hasMany(VerifikasiLog::class, 'id_referensi')->where('tipe_transaksi', 'laporan');
     }
-
 }

@@ -56,6 +56,7 @@ class VerifikasiLogResource extends Resource
                             ->options([
                                 'pending' => 'Pending',
                                 'draft' => 'Draft',
+                                'verified' => 'Verified',
                             ])
                             ->default('pending'),
                         Forms\Components\Select::make('status_sesudah')
@@ -118,6 +119,7 @@ class VerifikasiLogResource extends Resource
                     ->colors([
                         'warning' => 'pending',
                         'gray' => 'draft',
+                        'success' => 'verified',
                     ]),
                 Tables\Columns\BadgeColumn::make('status_sesudah')
                     ->label('Status Akhir')
@@ -172,7 +174,7 @@ class VerifikasiLogResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(), // Audit logs should ideally be read-only
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation()
                     ->visible(fn() => auth()->user()->role === 'admin'),
@@ -224,6 +226,7 @@ class VerifikasiLogResource extends Resource
                             ->color(fn(string $state): string => match ($state) {
                                 'pending' => 'warning',
                                 'draft' => 'gray',
+                                'verified' => 'success',
                                 default => 'gray',
                             }),
                         Infolists\Components\TextEntry::make('status_sesudah')
@@ -253,7 +256,7 @@ class VerifikasiLogResource extends Resource
             'index' => Pages\ListVerifikasiLogs::route('/'),
             'create' => Pages\CreateVerifikasiLog::route('/create'),
             'view' => Pages\ViewVerifikasiLog::route('/{record}'),
-            'edit' => Pages\EditVerifikasiLog::route('/{record}/edit'),
+            // 'edit' => Pages\EditVerifikasiLog::route('/{record}/edit'), // Disabled edit for logs
         ];
     }
 

@@ -6,6 +6,7 @@ use App\Filament\Resources\TransaksiKeluarResource\Pages;
 use App\Models\TransaksiKeluar;
 use App\Models\Barang;
 use App\Models\User;
+use App\Filament\RelationManagers\VerifikasiLogsRelationManager;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -228,6 +229,13 @@ class TransaksiKeluarResource extends Resource
                 ExportBulkAction::make(),
             ])
             ->defaultSort('tanggal_keluar', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            VerifikasiLogsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
