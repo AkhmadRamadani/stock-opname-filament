@@ -43,6 +43,12 @@ class TransaksiKeluar extends Model
         return $this->belongsTo(User::class, 'id_user_verifikator');
     }
 
+    public function verifikasiLogs()
+    {
+        return $this->hasMany(VerifikasiLog::class, 'id_referensi')
+            ->where('tipe_transaksi', 'keluar');
+    }
+
     protected static function booted()
     {
         static::creating(function ($model) {

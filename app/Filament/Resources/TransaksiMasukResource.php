@@ -269,6 +269,13 @@ class TransaksiMasukResource extends Resource
             ->defaultSort('tanggal_masuk', 'desc');
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\RelationManagers\VerifikasiLogsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [

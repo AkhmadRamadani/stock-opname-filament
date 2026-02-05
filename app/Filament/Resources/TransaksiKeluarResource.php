@@ -230,6 +230,13 @@ class TransaksiKeluarResource extends Resource
             ->defaultSort('tanggal_keluar', 'desc');
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\RelationManagers\VerifikasiLogsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
