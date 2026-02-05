@@ -40,8 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                TransaksiMasukResource\Widgets\Stats::class,
-                TransaksiKeluarResource\Widgets\Stats::class,
+                // Widgets are discovered automatically
             ])
             ->middleware([
                 EncryptCookies::class,
