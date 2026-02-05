@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 
 class LaporanStokResource extends Resource
 {
@@ -63,6 +64,7 @@ class LaporanStokResource extends Resource
                             ->label('Tanggal Laporan')
                             ->required()
                             ->default(today())
+                            ->maxDate(today())
                             ->native(false),
                     ])
                     ->columns(3),
@@ -102,7 +104,12 @@ class LaporanStokResource extends Resource
                         Forms\Components\TextInput::make('stok_akhir')
                             ->label('Stok Akhir')
                             ->default(0)
-                            ->numeric(),
+                            ->numeric()
+                            ->reactive()
+                            ->afterStateUpdated(
+                                fn($state, callable $set, callable $get) =>
+                                $set('stok_awal', (int)$get('stok_akhir') - (int)$get('total_masuk') + (int)$get('total_keluar'))
+                            )->readOnly(),
 
                     ])
                     ->columns(4),
@@ -186,13 +193,14 @@ class LaporanStokResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('export_excel')
-                        ->label('Export Excel')
-                        ->icon('heroicon-o-document-arrow-down')
-                        ->action(function ($records) {
-                            // Implement Excel export logic here
-                            // You can use maatwebsite/excel package
-                        }),
+                    // Tables\Actions\BulkAction::make('export_excel')
+                    //     ->label('Export Excel')
+                    //     ->icon('heroicon-o-document-arrow-down')
+                    //     ->action(function ($records) {
+                    //         // Implement Excel export logic here
+                    //         // You can use maatwebsite/excel package
+                    //     }),
+                    ExportBulkAction::make(),
                 ]),
             ])
             ->defaultSort('tanggal', 'desc')

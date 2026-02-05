@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -32,15 +33,10 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('password')
                     ->password()
+                    ->maxLength(255)
                     ->required(fn(string $operation): bool => $operation === 'create')
-                    ->maxLength(255),
-                Forms\Components\Select::make('role')
-                    ->options([
-                        'admin' => 'Admin',
-                        'admin_input' => 'Admin Input',
-                        'supervisor' => 'Supervisor',
-                    ])
-                    ->required(),
+                    ->visible(fn(string $operation): bool => $operation === 'create'),
+                Select::make('roles')->multiple()->relationship('roles', 'name'),
                 Forms\Components\Toggle::make('is_active')
                     ->default(true),
             ]);
@@ -54,12 +50,10 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\SelectColumn::make('role')
-                    ->options([
-                        'admin' => 'Admin',
-                        'admin_input' => 'Admin Input',
-                        'supervisor' => 'Supervisor',
-                    ]),
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Role')
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -67,12 +61,7 @@ class UserResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role')
-                    ->options([
-                        'admin' => 'Admin',
-                        'admin_input' => 'Admin Input',
-                        'supervisor' => 'Supervisor',
-                    ]),
+                Tables\Filters\SelectFilter::make('roles')->multiple()->relationship('roles', 'name'),
                 Tables\Filters\TernaryFilter::make('is_active'),
             ])
             ->actions([
