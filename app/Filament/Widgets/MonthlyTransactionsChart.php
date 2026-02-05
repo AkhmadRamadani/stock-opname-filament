@@ -31,20 +31,24 @@ class MonthlyTransactionsChart extends ChartWidget
 
         // SQLite syntax for date formatting
         $masukCounts = TransaksiMasuk::select(
-                DB::raw("strftime('%Y-%m', created_at) as month"),
-                DB::raw('count(*) as total')
-            )
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
+            DB::raw("COUNT(*) as total")
+        )
             ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
             ->groupBy('month')
+            ->orderBy('month')
             ->pluck('total', 'month');
 
+
         $keluarCounts = TransaksiKeluar::select(
-                DB::raw("strftime('%Y-%m', created_at) as month"),
-                DB::raw('count(*) as total')
-            )
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
+            DB::raw("COUNT(*) as total")
+        )
             ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
             ->groupBy('month')
+            ->orderBy('month')
             ->pluck('total', 'month');
+
 
         $finalMasuk = $months->map(fn($m) => $masukCounts[$m] ?? 0)->toArray();
         $finalKeluar = $months->map(fn($m) => $keluarCounts[$m] ?? 0)->toArray();
