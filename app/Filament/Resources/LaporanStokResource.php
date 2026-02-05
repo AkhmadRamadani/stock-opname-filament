@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 
 class LaporanStokResource extends Resource
 {
@@ -192,13 +193,14 @@ class LaporanStokResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('export_excel')
-                        ->label('Export Excel')
-                        ->icon('heroicon-o-document-arrow-down')
-                        ->action(function ($records) {
-                            // Implement Excel export logic here
-                            // You can use maatwebsite/excel package
-                        }),
+                    // Tables\Actions\BulkAction::make('export_excel')
+                    //     ->label('Export Excel')
+                    //     ->icon('heroicon-o-document-arrow-down')
+                    //     ->action(function ($records) {
+                    //         // Implement Excel export logic here
+                    //         // You can use maatwebsite/excel package
+                    //     }),
+                    ExportBulkAction::make(),
                 ]),
             ])
             ->defaultSort('tanggal', 'desc')
