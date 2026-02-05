@@ -88,13 +88,15 @@ class StockOpnameResource extends Resource
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'secondary' => 'draft',
-                        'warning' => 'verified',
-                        'success' => 'published',
-                    ])
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'draft' => 'secondary',
+                        'verified' => 'warning',
+                        'published' => 'success',
+                        default => 'gray',
+                    })
                     ->sortable(),
             ])
             ->filters([
@@ -127,6 +129,62 @@ class StockOpnameResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('verify')
+                    ->label('Verifikasi')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn($record) => $record->status === 'draft' && auth()->user()->role === 'supervisor')
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Textarea::make('catatan_verifikasi')
+                            ->label('Catatan Verifikasi')
+                            ->rows(3),
+                    ])
+                    ->action(function (array $data, $record) {
+                        $record->update([
+                            'status' => 'verified',
+                            'id_user_verifikator' => auth()->id(),
+                            'tanggal_verifikasi' => now(),
+                        ]);
+
+                        \App\Models\VerifikasiLog::create([
+                            'tipe_transaksi' => 'laporan',
+                            'id_referensi' => $record->id,
+                            'id_user_verifikator' => auth()->id(),
+                            'status_sebelum' => 'draft',
+                            'status_sesudah' => 'verified',
+                            'catatan_verifikasi' => $data['catatan_verifikasi'] ?? null,
+                            'tanggal_verifikasi' => now(),
+                        ]);
+                    }),
+                Tables\Actions\Action::make('publish')
+                    ->label('Publish')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->visible(fn($record) => $record->status === 'verified' && (auth()->user()->role === 'manager' || auth()->user()->role === 'admin' || auth()->user()->role === 'supervisor'))
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Textarea::make('catatan_verifikasi')
+                            ->label('Catatan Publish')
+                            ->rows(3),
+                    ])
+                    ->action(function (array $data, $record) {
+                        $record->update([
+                            'status' => 'published',
+                            'id_user_verifikator' => auth()->id(),
+                            'tanggal_verifikasi' => now(),
+                        ]);
+
+                        \App\Models\VerifikasiLog::create([
+                            'tipe_transaksi' => 'laporan',
+                            'id_referensi' => $record->id,
+                            'id_user_verifikator' => auth()->id(),
+                            'status_sebelum' => 'verified',
+                            'status_sesudah' => 'published',
+                            'catatan_verifikasi' => $data['catatan_verifikasi'] ?? null,
+                            'tanggal_verifikasi' => now(),
+                        ]);
+                    }),
             ])
             ->headerActions([
                 Action::make('generateStockOpname')
@@ -177,7 +235,7 @@ class StockOpnameResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\RelationManagers\VerifikasiLogsRelationManager::class,
         ];
     }
 

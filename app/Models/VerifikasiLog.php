@@ -37,6 +37,8 @@ class VerifikasiLog extends Model
             return $this->belongsTo(TransaksiMasuk::class, 'id_referensi');
         } elseif ($this->tipe_transaksi === 'keluar') {
             return $this->belongsTo(TransaksiKeluar::class, 'id_referensi');
+        } elseif ($this->tipe_transaksi === 'laporan') {
+            return $this->belongsTo(LaporanStok::class, 'id_referensi');
         }
         return null;
     }
