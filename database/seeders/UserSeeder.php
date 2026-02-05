@@ -91,7 +91,6 @@ class UserSeeder extends Seeder
                 'name' => 'Admin User',
                 'password' => 'password',
                 'role' => 'admin',
-                'email_verified_at' => now(),
             ]
         );
         $admin->assignRole($superAdminRole);
@@ -103,7 +102,6 @@ class UserSeeder extends Seeder
                 'name' => 'Supervisor User',
                 'password' => 'password',
                 'role' => 'supervisor',
-                'email_verified_at' => now(),
             ]
         );
         $supervisor->assignRole($supervisorRole);
@@ -115,7 +113,6 @@ class UserSeeder extends Seeder
                 'name' => 'Staff Input',
                 'password' => 'password',
                 'role' => 'admin_input',
-                'email_verified_at' => now(),
             ]
         );
         $staff->assignRole($staffRole);
