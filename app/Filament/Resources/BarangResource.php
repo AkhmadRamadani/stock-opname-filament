@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class BarangResource extends Resource
 {
@@ -51,6 +52,10 @@ class BarangResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return $query->withSum(['transaksiMasuk' => fn (Builder $q) => $q->where('status', 'verified')], 'jumlah_masuk')
+                             ->withSum(['transaksiKeluar' => fn (Builder $q) => $q->where('status', 'verified')], 'jumlah_keluar');
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('kode_barang')
                     ->searchable(),
@@ -63,9 +68,25 @@ class BarangResource extends Resource
                 Tables\Columns\TextColumn::make('harga_satuan')
                     ->money('IDR')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('stok_saat_ini')
+                    ->label('Stok Saat Ini')
+                    ->state(function (Barang $record) {
+                        return ($record->transaksi_masuk_sum_jumlah_masuk ?? 0) - ($record->transaksi_keluar_sum_jumlah_keluar ?? 0);
+                    })
+                    ->suffix(fn (Barang $record) => ' ' . $record->satuan),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('userInput.name')
+                    ->label('Dibuat Oleh')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('userUpdate.name')
+                    ->label('Diubah Oleh')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
