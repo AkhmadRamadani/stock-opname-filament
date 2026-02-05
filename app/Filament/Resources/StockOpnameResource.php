@@ -29,7 +29,9 @@ class StockOpnameResource extends Resource
 
     protected static ?string $modelLabel = 'Stock Opname';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Stock Opname';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
