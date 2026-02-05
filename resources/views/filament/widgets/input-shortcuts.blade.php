@@ -11,21 +11,13 @@
             </div>
 
             <div class="flex gap-4">
-                <x-filament::button
-                    tag="a"
-                    href="{{ $this->getMasukUrl() }}"
-                    icon="heroicon-m-arrow-down-circle"
-                    color="primary"
-                >
+                <x-filament::button tag="a" href="{{ $this->getMasukUrl() }}" icon="heroicon-m-arrow-down-circle"
+                    color="primary">
                     Input Barang Masuk
                 </x-filament::button>
 
-                <x-filament::button
-                    tag="a"
-                    href="{{ $this->getKeluarUrl() }}"
-                    icon="heroicon-m-arrow-up-circle"
-                    color="danger"
-                >
+                <x-filament::button tag="a" href="{{ $this->getKeluarUrl() }}" icon="heroicon-m-arrow-up-circle"
+                    color="danger">
                     Input Barang Keluar
                 </x-filament::button>
             </div>
