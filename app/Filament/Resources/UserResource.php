@@ -66,8 +66,10 @@ class UserResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_active'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->hidden(fn ($record) => $record->hasRole('Super Admin')),
+                Tables\Actions\DeleteAction::make()
+                    ->hidden(fn ($record) => $record->hasRole('Super Admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

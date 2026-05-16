@@ -66,7 +66,29 @@ class TransaksiKeluarResource extends Resource
                             ->required()
                             ->numeric()
                             ->minValue(1)
-                            ->step(1),
+                            ->step(1)
+                            ->rule(function (Get $get) {
+                                return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                    $kode_barang = $get('kode_barang');
+                                    if (!$kode_barang) {
+                                        return;
+                                    }
+
+                                    $totalMasuk = \App\Models\TransaksiMasuk::where('kode_barang', $kode_barang)
+                                        ->where('status', 'verified')
+                                        ->sum('jumlah_masuk');
+
+                                    $totalKeluar = \App\Models\TransaksiKeluar::where('kode_barang', $kode_barang)
+                                        ->where('status', 'verified')
+                                        ->sum('jumlah_keluar');
+
+                                    $stokTerkini = $totalMasuk - $totalKeluar;
+
+                                    if ($value > $stokTerkini) {
+                                        $fail("Jumlah keluar ({$value}) tidak boleh melebihi stok terkini ({$stokTerkini}).");
+                                    }
+                                };
+                            }),
                         Forms\Components\TextInput::make('tujuan')
                             ->label('Tujuan')
                             ->required()
@@ -87,6 +109,8 @@ class TransaksiKeluarResource extends Resource
                             ->label('Status')
                             ->required()
                             ->default('pending')
+                            ->disabled(fn () => auth()->user()->hasRole('Admin Input'))
+                            ->dehydrated()
                             ->options([
                                 'pending' => 'Pending',
                                 'verified' => 'Verified',
@@ -96,20 +120,6 @@ class TransaksiKeluarResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Verifikasi')
-                    ->schema([
-                        Forms\Components\Select::make('id_user_verifikator')
-                            ->label('Verifikator')
-                            ->options(User::where('role', 'supervisor')->pluck('name', 'id'))
-                            ->visible(fn(Get $get) => in_array($get('status'), ['verified', 'rejected'])),
-                        Forms\Components\DateTimePicker::make('tanggal_verifikasi')
-                            ->label('Tanggal Verifikasi')
-                            ->visible(fn(Get $get) => in_array($get('status'), ['verified', 'rejected']))
-                            ->default(now())
-                            ->native(false),
-                    ])
-                    ->columns(2)
-                    ->visible(fn(Get $get) => in_array($get('status'), ['verified', 'rejected'])),
             ]);
     }
 
