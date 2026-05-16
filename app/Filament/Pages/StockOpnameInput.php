@@ -223,7 +223,7 @@ class StockOpnameInput extends Page implements HasForms, HasTable
                 ->color('primary')
                 ->action(function () {
                     return Excel::download(
-                        new StockOpnameExport($this->tanggal, $this->stockOpnameData),
+                        new StockOpnameExport($this->tanggal, $this->tanggal, $this->stockOpnameData),
                         "Stock_Opname_" . date('d-m-Y', strtotime($this->tanggal)) . ".xlsx"
                     );
                 }),
