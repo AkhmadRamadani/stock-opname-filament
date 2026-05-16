@@ -20,12 +20,14 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class StockOpnameExport implements FromCollection, WithHeadings, WithStyles, WithTitle, WithEvents
 {
-    protected $tanggal;
+    protected $dariTanggal;
+    protected $sampaiTanggal;
     protected $stockOpnameData;
 
-    public function __construct($tanggal, $stockOpnameData = null)
+    public function __construct($dariTanggal, $sampaiTanggal, $stockOpnameData = null)
     {
-        $this->tanggal = $tanggal;
+        $this->dariTanggal = $dariTanggal;
+        $this->sampaiTanggal = $sampaiTanggal;
         $this->stockOpnameData = $stockOpnameData;
     }
 
@@ -37,7 +39,9 @@ class StockOpnameExport implements FromCollection, WithHeadings, WithStyles, Wit
         foreach ($barangs as $index => $barang) {
             // Ambil data dari laporan_stok untuk tanggal yang dipilih
             $laporan = LaporanStok::where('kode_barang', $barang->kode_barang)
-                ->whereDate('tanggal', $this->tanggal)
+                ->whereDate('tanggal', '>=', $this->dariTanggal)
+                ->whereDate('tanggal', '<=', $this->sampaiTanggal)
+                ->orderBy('tanggal', 'desc')
                 ->first();
 
             $stokSistem = $laporan->stok_akhir ?? 0;
@@ -46,8 +50,9 @@ class StockOpnameExport implements FromCollection, WithHeadings, WithStyles, Wit
             $stokFisik = $this->stockOpnameData[$barang->kode_barang]['stok_fisik'] ?? '';
             $keterangan = $this->stockOpnameData[$barang->kode_barang]['keterangan'] ?? '';
 
-            // Hitung selisih
-            $selisih = $stokFisik !== '' ? ($stokFisik - $stokSistem) : '';
+            // Hitung selisih di excel menggunakan raw formula
+            $selisihFormula = "=IF(ISBLANK(G" . ($index + 7) . "), \"\", G" . ($index + 7) . "-F" . ($index + 7) . ")";
+            $statusFormula = "=IF(ISBLANK(H" . ($index + 7) . "), \"\", IF(H" . ($index + 7) . "=0,\"OK\",IF(H" . ($index + 7) . ">0,\"Lebih\",\"Kurang\")))";
 
             $data->push([
                 'no' => $index + 1,
@@ -57,8 +62,8 @@ class StockOpnameExport implements FromCollection, WithHeadings, WithStyles, Wit
                 'satuan' => $barang->satuan,
                 'stok_sistem' => $stokSistem,
                 'stok_fisik' => $stokFisik,
-                'selisih' => $selisih,
-                'status' => $this->getStatus($selisih),
+                'selisih' => $selisihFormula,
+                'status' => $statusFormula,
                 'keterangan' => $keterangan,
             ]);
         }
@@ -122,7 +127,7 @@ class StockOpnameExport implements FromCollection, WithHeadings, WithStyles, Wit
                 
                 $sheet->setCellValue('A1', 'LAPORAN STOCK OPNAME');
                 $sheet->setCellValue('A2', 'DPRD KOTA BATU');
-                $sheet->setCellValue('A3', 'Tanggal: ' . date('d/m/Y', strtotime($this->tanggal)));
+                $sheet->setCellValue('A3', 'Tanggal: ' . date('d/m/Y', strtotime($this->dariTanggal)) . ' s/d ' . date('d/m/Y', strtotime($this->sampaiTanggal)));
                 $sheet->setCellValue('A4', 'Tanggal Cetak: ' . now()->format('d/m/Y H:i'));
                 
                 $sheet->getStyle('A1:A3')->applyFromArray([
@@ -143,36 +148,6 @@ class StockOpnameExport implements FromCollection, WithHeadings, WithStyles, Wit
                     ],
                 ]);
 
-                // Conditional formatting untuk selisih
-                for ($row = 7; $row <= $lastRow; $row++) {
-                    $selisih = $sheet->getCell('H' . $row)->getValue();
-                    
-                    if ($selisih !== '' && $selisih !== null) {
-                        if ($selisih == 0) {
-                            $sheet->getStyle('A' . $row . ':J' . $row)->applyFromArray([
-                                'fill' => [
-                                    'fillType' => Fill::FILL_SOLID,
-                                    'startColor' => ['rgb' => '90EE90'],
-                                ],
-                            ]);
-                        } elseif ($selisih > 0) {
-                            $sheet->getStyle('A' . $row . ':J' . $row)->applyFromArray([
-                                'fill' => [
-                                    'fillType' => Fill::FILL_SOLID,
-                                    'startColor' => ['rgb' => 'FFFFE0'],
-                                ],
-                            ]);
-                        } else {
-                            $sheet->getStyle('A' . $row . ':J' . $row)->applyFromArray([
-                                'fill' => [
-                                    'fillType' => Fill::FILL_SOLID,
-                                    'startColor' => ['rgb' => 'FFB6C1'],
-                                ],
-                            ]);
-                        }
-                    }
-                }
-
                 $sheet->getStyle('A7:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle('F7:I' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
@@ -182,21 +157,14 @@ class StockOpnameExport implements FromCollection, WithHeadings, WithStyles, Wit
                 $sheet->getStyle('A' . $summaryRow)->getFont()->setBold(true);
                 
                 $sheet->setCellValue('A' . ($summaryRow + 1), 'Total Barang:');
-                $sheet->setCellValue('B' . ($summaryRow + 1), '=COUNTA(C7:C' . $lastRow . ')');
+                $sheet->setCellValue('B' . ($summaryRow + 1), '=COUNTA(C7:C' . ($lastRow - 1) . ')');
                 
                 $sheet->setCellValue('A' . ($summaryRow + 2), 'Total Sesuai:');
-                $sheet->setCellValue('B' . ($summaryRow + 2), '=COUNTIF(H7:H' . $lastRow . ',0)');
+                $sheet->setCellValue('B' . ($summaryRow + 2), '=COUNTIF(H7:H' . ($lastRow - 1) . ',0)');
                 
                 $sheet->setCellValue('A' . ($summaryRow + 3), 'Total Selisih:');
-                $sheet->setCellValue('B' . ($summaryRow + 3), '=COUNTIF(H7:H' . $lastRow . ',"<>0")-COUNTBLANK(H7:H' . $lastRow . ')');
+                $sheet->setCellValue('B' . ($summaryRow + 3), '=COUNTIF(H7:H' . ($lastRow - 1) . ',"<>0")-COUNTBLANK(H7:H' . ($lastRow - 1) . ')');
             },
         ];
-    }
-
-    private function getStatus($selisih)
-    {
-        if ($selisih === '' || $selisih === null) return '-';
-        if ($selisih == 0) return 'OK';
-        return $selisih > 0 ? 'Lebih' : 'Kurang';
     }
 }

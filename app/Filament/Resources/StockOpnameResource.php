@@ -213,17 +213,22 @@ class StockOpnameResource extends Resource
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('primary')
                     ->form([
-                        Forms\Components\DatePicker::make('tanggal')
-                            ->label('Tanggal')
+                        Forms\Components\DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal')
+                            ->default(now())
+                            ->required(),
+                        Forms\Components\DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal')
                             ->default(now())
                             ->required(),
                     ])
                     ->action(function (array $data) {
-                        $tanggal = $data['tanggal'];
+                        $dari_tanggal = $data['dari_tanggal'];
+                        $sampai_tanggal = $data['sampai_tanggal'];
 
                         return Excel::download(
-                            new StockOpnameExport($tanggal),
-                            "Stock_Opname_" . date('d-m-Y', strtotime($tanggal)) . ".xlsx"
+                            new StockOpnameExport($dari_tanggal, $sampai_tanggal),
+                            "Stock_Opname_" . date('d-m-Y', strtotime($dari_tanggal)) . "_sd_" . date('d-m-Y', strtotime($sampai_tanggal)) . ".xlsx"
                         );
                     }),
             ])

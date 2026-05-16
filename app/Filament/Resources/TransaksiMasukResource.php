@@ -116,6 +116,8 @@ class TransaksiMasukResource extends Resource
                             ->label('Status')
                             ->required()
                             ->default('pending')
+                            ->disabled(fn () => auth()->user()->hasRole('Admin Input'))
+                            ->dehydrated()
                             ->options([
                                 'pending' => 'Pending',
                                 'verified' => 'Verified',
@@ -125,20 +127,6 @@ class TransaksiMasukResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Verifikasi')
-                    ->schema([
-                        Forms\Components\Select::make('id_user_verifikator')
-                            ->label('Verifikator')
-                            ->options(User::where('role', 'supervisor')->pluck('name', 'id'))
-                            ->visible(fn(Get $get) => in_array($get('status'), ['verified', 'rejected'])),
-                        Forms\Components\DateTimePicker::make('tanggal_verifikasi')
-                            ->label('Tanggal Verifikasi')
-                            ->visible(fn(Get $get) => in_array($get('status'), ['verified', 'rejected']))
-                            ->default(now())
-                            ->native(false),
-                    ])
-                    ->columns(2)
-                    ->visible(fn(Get $get) => in_array($get('status'), ['verified', 'rejected'])),
             ]);
     }
 
