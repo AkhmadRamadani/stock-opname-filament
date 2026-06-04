@@ -209,9 +209,11 @@ class TransaksiMasukResource extends Resource
                     ),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn () => auth()->user()->role !== 'supervisor'),
                 Tables\Actions\DeleteAction::make()
-                    ->requiresConfirmation(),
+                    ->requiresConfirmation()
+                    ->visible(fn () => auth()->user()->role !== 'supervisor'),
                 Tables\Actions\Action::make('verify')
                     ->label('Verifikasi')
                     ->icon('heroicon-o-check-circle')
@@ -250,7 +252,8 @@ class TransaksiMasukResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()->role !== 'supervisor'),
                 ]),
                 ExportBulkAction::make()
             ])
