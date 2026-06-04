@@ -193,6 +193,7 @@ class StockOpnameResource extends Resource
                     ->label('Generate Stock Opname')
                     ->icon('heroicon-o-calculator')
                     ->color('success')
+                    ->visible(fn () => auth()->user()->role !== 'admin_input')
                     ->form([
                         Forms\Components\DatePicker::make('tanggal')
                             ->label('Tanggal')
@@ -212,6 +213,7 @@ class StockOpnameResource extends Resource
                     ->label('Export Excel')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('primary')
+                    ->visible(fn () => auth()->user()->role !== 'admin_input')
                     ->form([
                         Forms\Components\DatePicker::make('dari_tanggal')
                             ->label('Dari Tanggal')

@@ -109,15 +109,18 @@ class KategoriBarangResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn () => auth()->user()->role !== 'supervisor'),
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation()
-                    ->modalDescription('Apakah Anda yakin ingin menghapus kategori ini? Data yang terkait mungkin akan terpengaruh.'),
+                    ->modalDescription('Apakah Anda yakin ingin menghapus kategori ini? Data yang terkait mungkin akan terpengaruh.')
+                    ->visible(fn () => auth()->user()->role !== 'supervisor'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->requiresConfirmation(),
+                        ->requiresConfirmation()
+                        ->visible(fn () => auth()->user()->role !== 'supervisor'),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
