@@ -252,7 +252,6 @@ class StockOpnameResource extends Resource
     {
         return [
             'index' => Pages\ListStockOpnames::route('/'),
-            'create' => Pages\CreateStockOpname::route('/create'),
             'view' => Pages\ViewStockOpname::route('/{record}'),
             'edit' => Pages\EditStockOpname::route('/{record}/edit'),
         ];
